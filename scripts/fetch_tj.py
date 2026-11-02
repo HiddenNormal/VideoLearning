@@ -120,8 +120,10 @@ def download_one(entry: dict, dest: Path, verify: bool) -> dict:
             "--retry", "5", "--retry-delay", "3",
             "--retry-all-errors",               # 连 partial file 也重试
             "--speed-limit", "51200",           # 低于 50KB/s
-            "--speed-time", "60",               # 持续 60 秒就掐断重连
-            "--max-time", "1800",               # 单次传输硬上限 30 分钟，防"假活"挂死
+            "--speed-time", "45",               # 持续 45 秒就掐断重连
+            "--max-time", "300",                # 单次传输 5 分钟硬上限
+                                                # （archive.org 限流时连接会"假活"，
+                                                #   短超时 + 续传比长超时更高效）
             "--connect-timeout", "20",
             "-o", str(target),
             url,
@@ -233,7 +235,7 @@ def main() -> int:
                 done_bytes += res["bytes"]
             elif status == "skip":
                 skip += 1
-                done_bytes += res["bytes"]
+                # 跳过的不计入下载量与速度，否则 ETA 会算出几万 GB/s
             else:
                 fail += 1
                 failures.append(res)
