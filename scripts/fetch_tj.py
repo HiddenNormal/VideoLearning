@@ -117,11 +117,12 @@ def download_one(entry: dict, dest: Path, verify: bool) -> dict:
         cmd = [
             "curl", "-L", "--fail", "--silent", "--show-error",
             "-C", "-",                          # 断点续传
-            "--retry", "8", "--retry-delay", "3",
+            "--retry", "5", "--retry-delay", "3",
             "--retry-all-errors",               # 连 partial file 也重试
-            "--speed-limit", "51200",           # 低于 50KB/s 持续 90 秒就掐断重连
-            "--speed-time", "90",
-            "--connect-timeout", "30",
+            "--speed-limit", "51200",           # 低于 50KB/s
+            "--speed-time", "60",               # 持续 60 秒就掐断重连
+            "--max-time", "1800",               # 单次传输硬上限 30 分钟，防"假活"挂死
+            "--connect-timeout", "20",
             "-o", str(target),
             url,
         ]
