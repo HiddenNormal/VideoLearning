@@ -184,6 +184,7 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=4, help="并发下载数（archive.org 建议 ≤6）")
     ap.add_argument("--limit", type=int, default=0, help="只下前 N 个（调试）")
     ap.add_argument("--list", action="store_true", help="只列出文件，不下载")
+    ap.add_argument("--status", action="store_true", help="只检查完整性并退出")
     ap.add_argument("--no-verify", action="store_true", help="跳过 md5 校验")
     args = ap.parse_args()
 
@@ -208,6 +209,19 @@ def main() -> int:
         files = files[: args.limit]
         total = sum(f["size"] for f in files)
         print(f"（--limit 生效：只处理前 {len(files)} 个，{human(total)}）\n")
+
+    if args.status:
+        complete = partial = missing = 0
+        for f in files:
+            target = args.dest / f["name"]
+            if not target.exists():
+                missing += 1
+            elif f["size"] and target.stat().st_size == f["size"]:
+                complete += 1
+            else:
+                partial += 1
+        print(f"complete={complete} partial={partial} missing={missing} total={len(files)}")
+        return 0
 
     if args.list:
         print(f"{'大小':>10}  文件名")
