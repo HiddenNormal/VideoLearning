@@ -12,7 +12,8 @@
 VideoLearning/
 ├── scripts/
 │   ├── fetch_tj.py          从 archive.org 下载片源（只取原始 mp4）
-│   └── fetch_tj.sh          便捷入口
+│   ├── fetch_tj.sh          便捷入口
+│   └── audit_tj.py          片源体检（分辨率/帧率/码率分布）
 ├── external/
 │   └── resources/
 │       └── tj/              ★ 片源目录（16GB，已 gitignore）
@@ -53,6 +54,21 @@ bash scripts/fetch_tj.sh --workers 4
 | md5 校验 | 校验失败自动删除并重下 |
 | 并发 | 默认 4，archive.org 建议 ≤6 |
 | 仅标准库 | 不需要 pip 安装任何东西 |
+
+### 体检
+
+下完先跑一次，确认分辨率/帧率/码率，否则后面的 GIF 参数和切分阈值都是瞎猜：
+
+```bash
+python scripts/audit_tj.py
+```
+
+输出文件数、总时长、分辨率/帧率/码率分布、低码率黑名单，明细写到
+`external/resources/tj/_audit.csv`（该目录已 gitignore）。
+
+> **换源要重跑全部下游步骤**：镜头切分、关键帧、候选集、打标都依赖具体的片源文件。
+> 文件和原来不一样（原来是 161 集 / 624×464 / 25fps，现在是 240 个 / 规格待测），
+> 旧的切点和索引全部作废。
 
 ---
 
